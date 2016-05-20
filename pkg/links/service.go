@@ -1,57 +1,39 @@
 package links
 
 import (
-	"encoding/json"
-	"net/http"
-
-	"github.com/gorilla/mux"
+	"database/sql"
 )
 
-type LinkService interface {
-	Get(string) (*Link, error)
-	Update(slug string, link string) (*Link, error)
-	Remove(string) error
-}
-
 type linkService struct {
+	db *sql.DB
 }
 
-func NewLinkService() *linkService {
-	return &linkService{}
+func NewLinkService(db *sql.DB) *linkService {
+	return &linkService{
+		db: db,
+	}
 }
 
 func (l linkService) Get(slug string) (*Link, error) {
-	return &Link{"http://apple.com", slug}, nil
-}
-
-func (l linkService) Update(slug string, link string) (*Link, error) {
-	return &Link{"http://apple.com", slug}, nil
-}
-
-func (l linkService) Remove(slug string) error {
-	return nil
-}
-
-func BindRoutes(svc LinkService) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		slug := vars["slug"]
-		link, _ := vars["link"]
-		var response interface{}
-		var err error
-		switch r.Method {
-		case "GET":
-			response, err = svc.Get(slug)
-		case "PUT", "POST":
-			response, err = svc.Update(slug, link)
-		case "DELETE":
-			err = svc.Remove(slug)
-		}
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			response = err
-		}
-		w.Header().Set("Content-Type", "application/javascript")
-		json.NewEncoder(w).Encode(&response)
+	var li Link
+	row := l.db.QueryRow("SELECT url, slug FROM links WHERE slug = ?", slug)
+	if err := row.Scan(&li.URL, &li.Slug); err != nil {
+		return nil, err
 	}
+	return &li, nil
+}
+
+func (l linkService) Update(slug string, url string) (*Link, error) {
+	if _, err := l.db.Exec("INSERT INTO links (url, slug) VALUES(?, ?) ON DUPLICATE KEY UPDATE url=?", url, slug, url); err != nil {
+		return nil, err
+	}
+
+	return l.Get(slug)
+}
+
+func (l linkService) Delete(slug string) error {
+	if _, err := l.db.Exec("DELETE FROM links WHERE WHERE slug = ?", slug); err != nil {
+		return err
+	}
+	return nil
 }

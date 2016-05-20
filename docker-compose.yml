@@ -1,0 +1,24 @@
+version: '2'
+services:
+  db:
+    image: 'mariadb:latest'
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    volumes:
+      - ./create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+
+  shorteningapp:
+    build: .
+    ports:
+      - '80:8080'
+    depends_on:
+      - db
+    links:
+      - db
+    volumes:
+      - .:/go/src/github.com/saranrapjs/shortening
+    # this is a dreadful workaround for some kind of Docker for Mac + golang DNS crap :(
+    entrypoint:
+      - "sh"
+      - "-c"
+      - "DBHOST='root:@tcp('$$(getent hosts db | awk '{print $$1}')':3306)' shortening"

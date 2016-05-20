@@ -5,6 +5,26 @@
 </head>
 <body>
 <h1>Create URL:</h1>
-<script type="text/javascript"></script>
+<form method="POST">
+	<label>Slug:
+		<input type="text" name="slug">
+	</label>
+	<label>URL:
+		<input type="text" name="url">
+	</label>
+	<button>Submit</button>
+</form>
+<script type="text/javascript">
+var btn, form, slug;
+window.addEventListener('load', function() {
+	btn = document.querySelector('button');
+	form = document.querySelector('form');
+	slug = document.querySelector('input[name="slug"]');
+	btn.addEventListener('click', function() {
+		form.setAttribute('action', slug.value);
+		form.submit();
+	});
+});
+</script>
 </body>
 </html>
