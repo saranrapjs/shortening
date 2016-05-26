@@ -14,17 +14,8 @@
 	</label>
 	<button>Submit</button>
 </form>
-<script type="text/javascript">
-var btn, form, slug;
-window.addEventListener('load', function() {
-	btn = document.querySelector('button');
-	form = document.querySelector('form');
-	slug = document.querySelector('input[name="slug"]');
-	btn.addEventListener('click', function() {
-		form.setAttribute('action', slug.value);
-		form.submit();
-	});
-});
-</script>
+<h2>Links:</h2>
+<ul></ul>
+<script type="text/javascript" src="/manage/bundle.js"></script>
 </body>
 </html>

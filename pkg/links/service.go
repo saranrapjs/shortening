@@ -32,8 +32,26 @@ func (l linkService) Update(slug string, url string) (*Link, error) {
 }
 
 func (l linkService) Delete(slug string) error {
-	if _, err := l.db.Exec("DELETE FROM links WHERE WHERE slug = ?", slug); err != nil {
+	if _, err := l.db.Exec("DELETE FROM links WHERE slug = ?", slug); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (l linkService) List() ([]*Link, error) {
+	var lks []*Link
+	rows, err := l.db.Query("SELECT url, slug FROM links LIMIT 100")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var lk Link
+		if err := rows.Scan(&lk.URL, &lk.Slug); err != nil {
+			return nil, err
+		}
+		lks = append(lks, &lk)
+	}
+
+	return lks, nil
 }

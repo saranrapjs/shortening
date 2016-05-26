@@ -2,6 +2,7 @@ package links
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -11,10 +12,25 @@ type LinkService interface {
 	Get(string) (*Link, error)
 	Update(slug string, url string) (*Link, error)
 	Delete(string) error
+	List() ([]*Link, error)
 }
 
 type errResponse struct {
 	Message string `json:"message"`
+}
+
+func BindList(svc LinkService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var response interface{}
+		response, err := svc.List()
+		fmt.Println(response, err)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			response = errResponse{err.Error()}
+		}
+		w.Header().Set("Content-Type", "application/javascript")
+		json.NewEncoder(w).Encode(&response)
+	}
 }
 
 func BindRoutes(svc LinkService) http.HandlerFunc {

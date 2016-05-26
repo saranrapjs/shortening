@@ -34,8 +34,10 @@ func main() {
 		log.Fatal(err, dsn)
 	}
 
-	// API + 301 redirector
 	svc := links.NewLinkService(db)
+
+	r.HandleFunc("/list", links.BindList(svc))
+	// API + 301 redirector
 	r.HandleFunc("/{slug}", links.BindRoutes(svc))
 
 	// individual edit pages, for links
